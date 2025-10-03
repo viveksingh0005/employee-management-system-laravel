@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 class EmployeeController extends Controller
@@ -18,7 +19,9 @@ class EmployeeController extends Controller
     // ✅ Show create form
     public function create()
     {
-        return view('employees.create');
+        $users = User::all();
+    return view('employees.create', compact('users'));
+       
     }
 
     // ✅ Store new employee
@@ -30,6 +33,7 @@ class EmployeeController extends Controller
         'email' => 'required|email|unique:employees,email',
         'department' => 'required|string|max:255',
         'role' => 'required|string|max:255',
+         'user_id' => 'nullable|exists:users,id',
     ]);
 
     $employee = new Employee([
@@ -39,6 +43,8 @@ class EmployeeController extends Controller
         'department' => $request->department,
         'role' => $request->role,
         'account_number' => $request->account_number ?? null,
+         'user_id' => $request->user_id ?? null,
+        
     ]);
 
     // Handle files
@@ -84,10 +90,11 @@ class EmployeeController extends Controller
             'email' => 'required|email|unique:employees,email,' . $employee->id,
             'department' => 'required',
             'role' => 'required',
+            'user_id' => $request->user_id ?? $employee->user_id,
         ]);
 
         $employee->update($request->only([
-            'name', 'dob', 'email', 'department', 'account_number', 'role'
+            'name', 'dob', 'email', 'department', 'account_number', 'role','user_id'
         ]));
 
         // Update photo if new uploaded

@@ -17,6 +17,17 @@
         <label>Photo:</label><input type="file" name="photo"><br>
         <label>Aadhar Card:</label><input type="file" name="aadhaar_card"><br>
         <label>Pan Card:</label><input type="file" name="pan_card"><br>
+        <label>Link to User:</label>
+<select name="user_id">
+    <option value="">-- Select User --</option>
+    @foreach($users as $user)
+        <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+
+            {{ $user->name }} ({{ $user->email }})
+        </option>
+    @endforeach
+</select>
+
         <button type="submit">Save</button>
     </form>
     <a href="{{ route('employees.index') }}">Back</a>

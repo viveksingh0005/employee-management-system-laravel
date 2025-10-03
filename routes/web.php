@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\SalaryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +45,16 @@ Route::middleware('auth')->group(function () {
    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
    Route::post('employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])->name('employees.documents.store');
    Route::delete('employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])->name('employees.documents.destroy');
+
+   
+   Route::get('/salaries', [SalaryController::class, 'index'])->name('salaries.index');
+   Route::get('/salaries/create', [SalaryController::class, 'create'])->name('salaries.create');
+   Route::post('/salaries', [SalaryController::class, 'store'])->name('salaries.store');
+   Route::get('/salaries/{salary}', [SalaryController::class, 'show'])->name('salaries.show');
+   Route::get('/salaries/{salary}/edit', [SalaryController::class, 'edit'])->name('salaries.edit');
+   Route::put('/salaries/{salary}', [SalaryController::class, 'update'])->name('salaries.update');
+   Route::delete('/salaries/{salary}', [SalaryController::class, 'destroy'])->name('salaries.destroy');
+   Route::get('my-salaries', [SalaryController::class, 'mySalaries'])->name('salaries.my');
     
 });
 
