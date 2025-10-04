@@ -4,13 +4,16 @@
     </x-slot>
 
     <div class="py-6 max-w-3xl mx-auto">
-        <form action="{{ route('salaries.update', $salary->id) }}" method="POST" class="bg-white p-6 rounded-md shadow-md space-y-4">
+        <form action="{{ route('salaries.update', $salary->id) }}" method="POST"
+            class="bg-white p-6 rounded-md shadow-md space-y-4">
             @csrf
             @method('PUT')
 
             <div>
                 <label class="font-semibold">Employee</label>
-                <input type="text" value="{{ $salary->employee->name }}" disabled class="w-full border p-2 rounded bg-gray-100">
+                <input type="hidden" name="employee_id" value="{{ $salary->employee->id }}">
+                <input type="text" value="{{ $salary->employee->name }}" disabled
+                    class="w-full border p-2 rounded bg-gray-100">
             </div>
 
             <div>
@@ -20,22 +23,26 @@
 
             <div>
                 <label class="font-semibold">Base Salary</label>
-                <input type="number" step="0.01" name="base_salary" value="{{ $salary->base_salary }}" class="w-full border p-2 rounded">
+                <input type="number" step="0.01" name="base_salary" value="{{ $salary->base_salary }}"
+                    class="w-full border p-2 rounded">
             </div>
 
             <div>
                 <label class="font-semibold">Extra Duty</label>
-                <input type="number" name="extra_duties" value="{{ $salary->extra_duties }}" class="w-full border p-2 rounded">
+                <input type="number" name="extra_duties" value="{{ $salary->extra_duties }}"
+                    class="w-full border p-2 rounded">
             </div>
 
             <div>
                 <label class="font-semibold">Extra Duty Salary</label>
-                <input type="number" step="0.01" name="extra_duty_salary" value="{{ $salary->extra_duty_salary }}" class="w-full border p-2 rounded">
+                <input type="number" step="0.01" name="extra_duty_salary" value="{{ $salary->extra_duty_salary }}"
+                    class="w-full border p-2 rounded">
             </div>
 
             <div>
                 <label class="font-semibold">Deductions</label>
-                <input type="number" step="0.01" name="deductions" value="{{ $salary->deductions }}" class="w-full border p-2 rounded">
+                <input type="number" step="0.01" name="deductions" value="{{ $salary->deductions }}"
+                    class="w-full border p-2 rounded">
             </div>
 
             <div>
@@ -45,4 +52,31 @@
 
             <div>
                 <label class="font-semibold">Leave Deduction</label>
-               
+                <input type="number" step="0.01" name="leave_deduction" value="{{ $salary->leave_deduction }}"
+                    class="w-full border p-2 rounded">
+            </div>
+            <div>
+                <label class="font-semibold">Net Salary</label>
+                <input type="number" step="0.01" name="net_salary" value="{{ $salary->net_salary }}"
+                    class="w-full border p-2 rounded">
+            </div>
+            <div>
+                <label class="font-semibold">Payment Date</label>
+                <input type="date" name="payment_date"
+                    value="{{ $salary->payment_date }}"class="w-full border p-2 rounded">
+            </div>
+
+            <div>
+                <label class="font-semibold">Status</label>
+                <select name="status" class="w-full border p-2 rounded">
+                    <option value="pending" {{ $salary->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="paid" {{ $salary->status == 'paid' ? 'selected' : '' }}>Paid</option>
+                </select>
+            </div>
+
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Update Salary</button>
+
+        </form>
+    </div>
+</x-app-layout>

@@ -7,6 +7,7 @@ use App\Models\EmployeeDocument;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+
 class EmployeeController extends Controller
 {
     // ✅ List employees
@@ -20,50 +21,49 @@ class EmployeeController extends Controller
     public function create()
     {
         $users = User::all();
-    return view('employees.create', compact('users'));
-       
+        return view('employees.create', compact('users'));
     }
 
     // ✅ Store new employee
-      public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'dob' => 'required|date',
-        'email' => 'required|email|unique:employees,email',
-        'department' => 'required|string|max:255',
-        'role' => 'required|string|max:255',
-         'user_id' => 'nullable|exists:users,id',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'email' => 'required|email|unique:employees,email',
+            'department' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
+            'user_id' => 'nullable|exists:users,id',
+        ]);
 
-    $employee = new Employee([
-        'name' => $request->name,
-        'dob' => $request->dob,
-        'email' => $request->email,
-        'department' => $request->department,
-        'role' => $request->role,
-        'account_number' => $request->account_number ?? null,
-         'user_id' => $request->user_id ?? null,
-        
-    ]);
+        $employee = new Employee([
+            'name' => $request->name,
+            'dob' => $request->dob,
+            'email' => $request->email,
+            'department' => $request->department,
+            'role' => $request->role,
+            'account_number' => $request->account_number ?? null,
+            'user_id' => $request->user_id ?? null,
 
-    // Handle files
-    if ($request->hasFile('photo')) {
-        $employee->photo = $request->file('photo')->store('employees/photos', 'public');
+        ]);
+
+        // Handle files
+        if ($request->hasFile('photo')) {
+            $employee->photo = $request->file('photo')->store('employees/photos', 'public');
+        }
+
+        if ($request->hasFile('aadhaar_card')) {
+            $employee->aadhaar_card = $request->file('aadhaar_card')->store('employees/aadhaar', 'public');
+        }
+
+        if ($request->hasFile('pan_card')) {
+            $employee->pan_card = $request->file('pan_card')->store('employees/pan', 'public');
+        }
+
+        $employee->save();
+
+        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
-
-    if ($request->hasFile('aadhaar_card')) {
-        $employee->aadhaar_card = $request->file('aadhaar_card')->store('employees/aadhaar', 'public');
-    }
-
-    if ($request->hasFile('pan_card')) {
-        $employee->pan_card = $request->file('pan_card')->store('employees/pan', 'public');
-    }
-
-    $employee->save();
-
-    return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
-}
 
 
 
@@ -94,7 +94,13 @@ class EmployeeController extends Controller
         ]);
 
         $employee->update($request->only([
-            'name', 'dob', 'email', 'department', 'account_number', 'role','user_id'
+            'name',
+            'dob',
+            'email',
+            'department',
+            'account_number',
+            'role',
+            'user_id'
         ]));
 
         // Update photo if new uploaded
@@ -136,35 +142,35 @@ class EmployeeController extends Controller
 
 
 
-// Upload a document
-public function storeDocument(Request $request, Employee $employee)
-{
-    $request->validate([
-        'file' => 'required|file|max:2048'
-    ]);
+    // Upload a document
+    public function storeDocument(Request $request, Employee $employee)
+    {
+        $request->validate([
+            'file' => 'required|file|max:2048'
+        ]);
 
-    $path = $request->file('file')->store('employees/documents', 'public');
+        $path = $request->file('file')->store('employees/documents', 'public');
 
-    $employee->documents()->create([
-        'document_name' => $request->file('file')->getClientOriginalName(),
-        'document_file' => $path,
-    ]);
+        $employee->documents()->create([
+            'document_name' => $request->file('file')->getClientOriginalName(),
+            'document_file' => $path,
+        ]);
 
-    return back()->with('success', 'Document uploaded successfully.');
-}
-
-// Delete a document
-public function destroyDocument(Employee $employee, EmployeeDocument $document)
-{
-    // Delete the file from storage
-    if (Storage::disk('public')->exists($document->document_file)) {
-        Storage::disk('public')->delete($document->document_file);
+        return back()->with('success', 'Document uploaded successfully.');
     }
 
-    // Delete record from database
-    $document->delete();
+    // Delete a document
+    public function destroyDocument(Employee $employee, EmployeeDocument $document)
+    {
+        // Delete the file from storage
+        if (Storage::disk('public')->exists($document->document_file)) {
+            Storage::disk('public')->delete($document->document_file);
+        }
 
-    return back()->with('success', 'Document deleted successfully.');
-}
+        // Delete record from database
+        $document->delete();
 
+        return back()->with('success', 'Document deleted successfully.');
+    }
+ 
 }

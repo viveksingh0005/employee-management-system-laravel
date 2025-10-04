@@ -17,7 +17,7 @@ class Salary extends Model
         'net_salary',
         'month',
         'payment_date',
-        'payment_status',
+        'status',
     ];
 
     // Relationship with Employee

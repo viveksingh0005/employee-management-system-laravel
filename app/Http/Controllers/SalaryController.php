@@ -65,7 +65,7 @@ class SalaryController extends Controller
     // Update salary
     public function update(Request $request, Salary $salary)
     {
-        $request->validate([
+         $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'base_salary' => 'required|numeric',
             'extra_duties' => 'nullable|integer',

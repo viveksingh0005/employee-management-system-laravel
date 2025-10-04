@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\EmployeeController;
@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
    Route::post('employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])->name('employees.documents.store');
    Route::delete('employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])->name('employees.documents.destroy');
+ 
 
    
    Route::get('/salaries', [SalaryController::class, 'index'])->name('salaries.index');
@@ -55,6 +56,21 @@ Route::middleware('auth')->group(function () {
    Route::put('/salaries/{salary}', [SalaryController::class, 'update'])->name('salaries.update');
    Route::delete('/salaries/{salary}', [SalaryController::class, 'destroy'])->name('salaries.destroy');
    Route::get('my-salaries', [SalaryController::class, 'mySalaries'])->name('salaries.my');
+
+
+Route::prefix('attendances')->group(function () {
+ 
+    Route::get('/', [AttendanceController::class, 'index'])->name('attendances.index');
+    Route::get('/create', [AttendanceController::class, 'create'])->name('attendances.create');
+    Route::post('/', [AttendanceController::class, 'store'])->name('attendances.store');
+    Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('attendances.edit');
+    Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('attendances.update');
+    Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('attendances.destroy');
+    Route::get('/month/{year}/{month}', [AttendanceController::class, 'monthView'])->name('attendances.month');
+
+
+});
+
     
 });
 
