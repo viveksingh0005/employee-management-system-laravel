@@ -6,6 +6,8 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\SiteController;
+use App\Http\Controllers\InventoryBatchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -59,19 +61,32 @@ Route::middleware('auth')->group(function () {
 
 
 Route::prefix('attendances')->group(function () {
- 
     Route::get('/', [AttendanceController::class, 'index'])->name('attendances.index');
-    Route::get('/create', [AttendanceController::class, 'create'])->name('attendances.create');
     Route::post('/', [AttendanceController::class, 'store'])->name('attendances.store');
-    Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])->name('attendances.edit');
-    Route::put('/{attendance}', [AttendanceController::class, 'update'])->name('attendances.update');
-    Route::delete('/{attendance}', [AttendanceController::class, 'destroy'])->name('attendances.destroy');
-    Route::get('/month/{year}/{month}', [AttendanceController::class, 'monthView'])->name('attendances.month');
 
-
+    // Month-wise edit/update
+    Route::get('/{year}/{month}/edit', [AttendanceController::class, 'edit'])->name('attendances.edit');
+    Route::put('/{year}/{month}', [AttendanceController::class, 'update'])->name('attendances.update');
 });
 
+Route::get('/sites', [SiteController::class, 'index'])->name('sites.index');
+    Route::get('/sites/create', [SiteController::class, 'create'])->name('sites.create');
+    Route::post('/sites', [SiteController::class, 'store'])->name('sites.store');
+    Route::get('/sites/{site}/edit', [SiteController::class, 'edit'])->name('sites.edit');
+    Route::put('/sites/{site}', [SiteController::class, 'update'])->name('sites.update');
+    Route::delete('/sites/{site}', [SiteController::class, 'destroy'])->name('sites.destroy');
     
+});
+
+
+Route::prefix('inventory')->group(function () {
+    Route::get('/', [InventoryBatchController::class, 'index'])->name('inventory.index');
+    Route::get('/create', [InventoryBatchController::class, 'create'])->name('inventory.create');
+    Route::post('/', [InventoryBatchController::class, 'store'])->name('inventory.store');
+    Route::get('/{id}', [InventoryBatchController::class, 'show'])->name('inventory.show');
+    Route::get('/{id}/edit', [InventoryBatchController::class, 'edit'])->name('inventory.edit');
+    Route::put('/{id}', [InventoryBatchController::class, 'update'])->name('inventory.update');
+    Route::delete('/{id}', [InventoryBatchController::class, 'destroy'])->name('inventory.destroy');
 });
 
 require __DIR__.'/auth.php';

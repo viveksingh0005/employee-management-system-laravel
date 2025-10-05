@@ -1,41 +1,71 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">Edit Attendance for {{ $employee->name }}</h2>
+        <h2 class="font-semibold text-xl text-gray-800">
+            Edit Attendance - {{ \Carbon\Carbon::create($year, $month, 1)->format('F Y') }}
+        </h2>
     </x-slot>
+  <div class="mb-4">
+            <a href="{{ route('attendances.index', ['month' => $month, 'year' => $year]) }}"
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                ← Back
+            </a>
+        </div>
 
-    <div class="py-6 max-w-6xl mx-auto overflow-x-auto">
-        <form action="{{ route('attendances.update', $employee->id) }}" method="POST" class="bg-white p-6 rounded-md shadow-md space-y-4">
+    <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form action="{{ route('attendances.update', [$year, $month]) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="overflow-x-auto">
-                <table class="w-max border-collapse border border-gray-300">
-                    <thead>
+                <table class="min-w-full border text-sm">
+                    <thead class="bg-gray-100">
                         <tr>
-                            <th class="border px-2 py-1">Date</th>
-                            <th class="border px-2 py-1">Shift 1</th>
-                            <th class="border px-2 py-1">Shift 2</th>
+                            <th class="border px-2 py-1">Employee</th>
+                            @foreach ($dates as $date)
+                                <th class="border px-2 py-1 text-center">
+                                    {{ $date->format('d M') }}
+                                </th>
+                            @endforeach
                         </tr>
                     </thead>
+
                     <tbody>
-                        @foreach($dates as $date)
+                        @foreach ($employees as $employee)
                             <tr>
-                                <td class="border px-2 py-1">{{ $date }}</td>
-                                <td class="border px-2 py-1 text-center">
-                                    <input type="checkbox" name="attendance[{{ $date }}][shift1]" value="1"
-                                        {{ isset($attendance[$date]) && $attendance[$date]->shift1 ? 'checked' : '' }}>
+                                <td class="border px-2 py-1 font-semibold whitespace-nowrap">
+                                    {{ $employee->name }}
                                 </td>
-                                <td class="border px-2 py-1 text-center">
-                                    <input type="checkbox" name="attendance[{{ $date }}][shift2]" value="1"
-                                        {{ isset($attendance[$date]) && $attendance[$date]->shift2 ? 'checked' : '' }}>
-                                </td>
+
+                                @foreach ($dates as $date)
+                                    @php
+                                        $dstr = $date->toDateString();
+                                        $att = $attendances[$employee->id][$dstr] ?? null;
+                                    @endphp
+                                    <td class="border px-2 py-1 text-center">
+                                        <div class="flex flex-col items-center space-y-1">
+                                            <label class="text-xs">M</label>
+                                            <input type="checkbox"
+                                                name="attendance[{{ $employee->id }}][{{ $dstr }}][morning]"
+                                                value="1" {{ !empty($att['morning']) ? 'checked' : '' }}>
+
+                                            <label class="text-xs">E</label>
+                                            <input type="checkbox"
+                                                name="attendance[{{ $employee->id }}][{{ $dstr }}][evening]"
+                                                value="1" {{ !empty($att['evening']) ? 'checked' : '' }}>
+                                        </div>
+                                    </td>
+                                @endforeach
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Update Attendance</button>
+            <div class="mt-4">
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
+                    Update Attendance
+                </button>
+            </div>
         </form>
     </div>
 </x-app-layout>

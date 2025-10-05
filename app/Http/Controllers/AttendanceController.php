@@ -75,25 +75,55 @@ class AttendanceController extends Controller
 }
 
 
-    public function edit(Attendance $attendance)
-    {
-        return view('attendances.edit', compact('attendance'));
+public function edit($year, $month)
+{
+    $start = Carbon::create($year, $month, 1)->startOfMonth();
+    $end   = $start->copy()->endOfMonth();
+    $period = CarbonPeriod::create($start, $end);
+    $dates = collect($period);
+
+    $employees = Employee::orderBy('name')->get();
+
+    $raw = Attendance::whereYear('date', $year)
+                     ->whereMonth('date', $month)
+                     ->get();
+
+    $attendances = [];
+    foreach ($raw as $a) {
+        $d = Carbon::parse($a->date)->toDateString();
+        $attendances[$a->employee_id][$d] = [
+            'morning' => (bool) $a->morning_shift,
+            'evening' => (bool) $a->evening_shift,
+            'id' => $a->id,
+        ];
     }
 
-    public function update(Request $request, Attendance $attendance)
-    {
-        $request->validate([
-            'date' => 'required|date',
-        ]);
+    return view('attendances.edit', compact('employees', 'dates', 'attendances', 'month', 'year'));
+}
 
-        $attendance->update([
-            'date' => $request->date,
-            'morning_shift' => $request->has('morning_shift'),
-            'evening_shift' => $request->has('evening_shift'),
-        ]);
 
-        return redirect()->route('attendances.index')->with('success', 'Attendance updated!');
+public function update(Request $request, $year, $month)
+{
+    $data = $request->input('attendance', []);
+
+    foreach ($data as $employeeId => $days) {
+        foreach ($days as $date => $shifts) {
+            $attendance = Attendance::updateOrCreate(
+                ['employee_id' => $employeeId, 'date' => $date],
+                [
+                    'morning_shift' => !empty($shifts['morning']),
+                    'evening_shift' => !empty($shifts['evening']),
+                ]
+            );
+        }
     }
+
+    return redirect()->route('attendances.index', ['month' => $month, 'year' => $year])
+                     ->with('success', 'Attendance updated successfully!');
+}
+
+
+
 
     public function destroy(Attendance $attendance)
     {
