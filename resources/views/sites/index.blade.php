@@ -26,6 +26,7 @@
                 <tr class="bg-gray-100 text-left">
                     <th class="py-2 px-4 border-b">Site Name</th>
                     <th class="py-2 px-4 border-b">Location</th>
+                    <th class="py-2 px-4 border-b">Department</th>
                     <th class="py-2 px-4 border-b">Actions</th>
                 </tr>
             </thead>
@@ -34,11 +35,10 @@
                     <tr>
                         <td class="py-2 px-4 border-b">{{ $site->name }}</td>
                         <td class="py-2 px-4 border-b">{{ $site->location }}</td>
+                        <td class="py-2 px-4 border-b">{{ $site->department ? $site->department->name : 'N/A' }}</td>
                         <td class="py-2 px-4 border-b space-x-2">
-                            <!-- Edit Button -->
                             <a href="{{ route('sites.edit', $site->id) }}" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500">Edit</a>
-                            
-                            <!-- Delete Button -->
+
                             <form action="{{ route('sites.destroy', $site->id) }}" method="POST" class="inline-block">
                                 @csrf
                                 @method('DELETE')
@@ -50,7 +50,7 @@
 
                 @if($sites->isEmpty())
                     <tr>
-                        <td colspan="3" class="text-center py-4">No sites found.</td>
+                        <td colspan="4" class="text-center py-4">No sites found.</td>
                     </tr>
                 @endif
             </tbody>
