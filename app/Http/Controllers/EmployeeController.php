@@ -5,15 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
 use App\Models\User;
+use App\Models\Department;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
+    public function __construct()
+{
+    $this->middleware('permission:view employees')->only(['index', 'show']);
+    $this->middleware('permission:create employees')->only(['create', 'store']);
+    $this->middleware('permission:edit employees')->only(['edit', 'update']);
+    $this->middleware('permission:delete employees')->only(['destroy']);
+}
+
     // ✅ List employees
     public function index()
     {
-        $employees = Employee::with('documents')->get();
+        $employees = Employee::with('documents', 'department', 'user')->get();
         return view('employees.index', compact('employees'));
     }
 
@@ -21,7 +31,9 @@ class EmployeeController extends Controller
     public function create()
     {
         $users = User::all();
-        return view('employees.create', compact('users'));
+        $departments = Department::all();
+        $roles = Role::pluck('name', 'id');
+        return view('employees.create', compact('users', 'departments', 'roles'));
     }
 
     // ✅ Store new employee
@@ -31,23 +43,23 @@ class EmployeeController extends Controller
             'name' => 'required|string|max:255',
             'dob' => 'required|date',
             'email' => 'required|email|unique:employees,email',
-            'department' => 'required|string|max:255',
+            'department_id' => 'required|exists:departments,id',
             'role' => 'required|string|max:255',
             'user_id' => 'nullable|exists:users,id',
         ]);
 
+        // 🧩 Create new employee
         $employee = new Employee([
             'name' => $request->name,
             'dob' => $request->dob,
             'email' => $request->email,
-            'department' => $request->department,
+            'department_id' => $request->department_id,
             'role' => $request->role,
             'account_number' => $request->account_number ?? null,
             'user_id' => $request->user_id ?? null,
-
         ]);
 
-        // Handle files
+        // 🧩 Handle file uploads
         if ($request->hasFile('photo')) {
             $employee->photo = $request->file('photo')->store('employees/photos', 'public');
         }
@@ -62,48 +74,59 @@ class EmployeeController extends Controller
 
         $employee->save();
 
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
+        // 🧩 Step 2: Assign Role to Linked User
+        if ($employee->user) {
+            $employee->user->syncRoles([$request->role]);
+        }
+
+        return redirect()->route('employees.index')->with('success', 'Employee created and role assigned successfully.');
     }
-
-
 
     // ✅ Show single employee
     public function show(Employee $employee)
     {
-        $employee->load('documents');
+        $employee->load('documents', 'department', 'user');
         return view('employees.show', compact('employee'));
     }
 
     // ✅ Edit form
     public function edit(Employee $employee)
     {
-        $employee->load('documents');
-        return view('employees.edit', compact('employee'));
+        $employee->load('documents', 'department', 'user');
+        $roles = Role::pluck('name', 'id');
+        $users = User::all();
+        $departments = Department::all();
+        return view('employees.edit', compact('employee', 'users', 'departments', 'roles'));
     }
 
     // ✅ Update employee
     public function update(Request $request, Employee $employee)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'dob' => 'required|date',
             'email' => 'required|email|unique:employees,email,' . $employee->id,
-            'department' => 'required',
-            'role' => 'required',
-            'user_id' => $request->user_id ?? $employee->user_id,
+            'department_id' => 'required|exists:departments,id',
+            'role' => 'required|string|max:255',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $employee->update($request->only([
             'name',
             'dob',
             'email',
-            'department',
+            'department_id',
             'account_number',
             'role',
             'user_id'
         ]));
 
-        // Update photo if new uploaded
+        // 🧩 Update linked user role
+        if ($employee->user) {
+            $employee->user->syncRoles([$request->role]);
+        }
+
+        // 🧩 Update file uploads
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('employees/photos', 'public');
             $employee->update(['photo' => $photoPath]);
@@ -119,6 +142,7 @@ class EmployeeController extends Controller
             $employee->update(['pan_card' => $panPath]);
         }
 
+        // 🧩 Handle additional documents
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
                 $docPath = $file->store('employees/documents', 'public');
@@ -130,7 +154,7 @@ class EmployeeController extends Controller
             }
         }
 
-        return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
+        return redirect()->route('employees.index')->with('success', 'Employee updated and role synced successfully.');
     }
 
     // ✅ Delete employee
@@ -140,9 +164,7 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
     }
 
-
-
-    // Upload a document
+    // ✅ Upload a single document
     public function storeDocument(Request $request, Employee $employee)
     {
         $request->validate([
@@ -159,18 +181,15 @@ class EmployeeController extends Controller
         return back()->with('success', 'Document uploaded successfully.');
     }
 
-    // Delete a document
+    // ✅ Delete a document
     public function destroyDocument(Employee $employee, EmployeeDocument $document)
     {
-        // Delete the file from storage
         if (Storage::disk('public')->exists($document->document_file)) {
             Storage::disk('public')->delete($document->document_file);
         }
 
-        // Delete record from database
         $document->delete();
 
         return back()->with('success', 'Document deleted successfully.');
     }
- 
 }

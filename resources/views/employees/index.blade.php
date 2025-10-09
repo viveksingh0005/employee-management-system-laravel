@@ -31,7 +31,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $employee->id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $employee->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $employee->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $employee->department }}</td>
+                            <!-- Updated department display -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {{ $employee->department ? $employee->department->name : 'N/A' }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $employee->role }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($employee->photo)
@@ -53,6 +56,11 @@
                             </td>
                         </tr>
                     @endforeach
+                    @if($employees->isEmpty())
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-gray-500">No employees found.</td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>

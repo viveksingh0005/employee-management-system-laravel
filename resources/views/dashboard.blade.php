@@ -13,5 +13,13 @@
                 </div>
             </div>
         </div>
+        @if(auth()->check())
+    <div class="p-4 bg-gray-100 border rounded">
+        <p>👤 Logged in as: <strong>{{ auth()->user()->name }}</strong></p>
+        <p>Roles: {{ implode(', ', auth()->user()->getRoleNames()->toArray()) }}</p>
+        <p>Permissions: {{ implode(', ', auth()->user()->getAllPermissions()->pluck('name')->toArray()) }}</p>
+    </div>
+@endif
+
     </div>
 </x-app-layout>

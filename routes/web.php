@@ -11,6 +11,8 @@ use App\Http\Controllers\InventoryBatchController;
 use App\Http\Controllers\DepartmentController;
 use Illuminate\Support\Facades\Route;
 
+
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -49,6 +51,7 @@ Route::middleware('auth')->group(function () {
    Route::post('employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])->name('employees.documents.store');
    Route::delete('employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])->name('employees.documents.destroy');
  
+   
 
    
    Route::get('/salaries', [SalaryController::class, 'index'])->name('salaries.index');
@@ -97,6 +100,12 @@ Route::post('/departments', [DepartmentController::class, 'store'])->name('depar
 Route::get('/departments/{department}/edit', [DepartmentController::class, 'edit'])->name('departments.edit');
 Route::put('/departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
 Route::delete('/departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
+
+
+
+
+
+
 
 
     

@@ -16,7 +16,7 @@
             <p><span class="font-semibold text-gray-700">Name:</span> {{ $employee->name }}</p>
             <p><span class="font-semibold text-gray-700">Email:</span> {{ $employee->email }}</p>
             <p><span class="font-semibold text-gray-700">DOB:</span> {{ $employee->dob }}</p>
-            <p><span class="font-semibold text-gray-700">Department:</span> {{ $employee->department }}</p>
+            <p><span class="font-semibold text-gray-700">Department:</span> {{ $employee->department->name }}</p>
             <p><span class="font-semibold text-gray-700">Role:</span> {{ $employee->role }}</p>
             <p><span class="font-semibold text-gray-700">Account No:</span> {{ $employee->account_number }}</p>
         </div>

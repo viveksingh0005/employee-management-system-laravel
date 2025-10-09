@@ -15,8 +15,9 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-md rounded-lg">
                 <div class="p-8 text-gray-900">
-                    
-                    <form action="{{ route('employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data">
+
+                    <form action="{{ route('employees.update', $employee->id) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -40,43 +41,59 @@
 
                         <div class="mb-6">
                             <label class="block mb-2 font-semibold text-gray-700">Department</label>
-                            <input type="text" name="department" value="{{ old('department', $employee->department) }}" required
+                            <select name="department_id" required
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-slate-500 focus:outline-none">
+                                <option value="">-- Select Department --</option>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}"
+                                        {{ old('department_id', $employee->department_id) == $department->id ? 'selected' : '' }}>
+                                        {{ $department->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
+
 
                         <div class="mb-6">
                             <label class="block mb-2 font-semibold text-gray-700">Role</label>
-                            <input type="text" name="role" value="{{ old('role', $employee->role) }}" required
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-slate-500 focus:outline-none">
+                            <select name="role" required>
+                                @foreach ($roles as $id => $role)
+                                    <option value="{{ $role }}">{{ ucfirst($role) }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="mb-6">
                             <label class="block mb-2 font-semibold text-gray-700">Account Number</label>
-                            <input type="text" name="account_number" value="{{ old('account_number', $employee->account_number) }}"
+                            <input type="text" name="account_number"
+                                value="{{ old('account_number', $employee->account_number) }}"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-slate-500 focus:outline-none">
                         </div>
 
                         <div class="mb-6">
                             <label class="block mb-2 font-semibold text-gray-700">Aadhaar Card</label>
                             <input type="file" name="aadhaar_card">
-                            @if($employee->aadhaar_card)
-                                <img src="{{ asset('storage/'.$employee->aadhaar_card) }}" width="80" class="mt-2 border rounded">
+                            @if ($employee->aadhaar_card)
+                                <img src="{{ asset('storage/' . $employee->aadhaar_card) }}" width="80"
+                                    class="mt-2 border rounded">
                             @endif
                         </div>
 
                         <div class="mb-6">
                             <label class="block mb-2 font-semibold text-gray-700">PAN Card</label>
                             <input type="file" name="pan_card">
-                            @if($employee->pan_card)
-                                <img src="{{ asset('storage/'.$employee->pan_card) }}" width="80" class="mt-2 border rounded">
+                            @if ($employee->pan_card)
+                                <img src="{{ asset('storage/' . $employee->pan_card) }}" width="80"
+                                    class="mt-2 border rounded">
                             @endif
                         </div>
 
                         <div class="mb-6">
                             <label class="block mb-2 font-semibold text-gray-700">Photo</label>
                             <input type="file" name="photo">
-                            @if($employee->photo)
-                                <img src="{{ asset('storage/'.$employee->photo) }}" width="80" class="mt-2 border rounded">
+                            @if ($employee->photo)
+                                <img src="{{ asset('storage/' . $employee->photo) }}" width="80"
+                                    class="mt-2 border rounded">
                             @endif
                         </div>
 

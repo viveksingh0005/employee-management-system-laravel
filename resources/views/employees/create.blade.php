@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800">
-                Edit Employee
+                Add Employee
             </h2>
             <a href="{{ route('employees.index') }}"
                 class="bg-slate-700 hover:bg-slate-800 transition-all text-sm rounded-md text-white px-4 py-2 shadow-md">
@@ -36,18 +36,29 @@
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
-            <!-- Department -->
+            <!-- Department Dropdown -->
             <div>
                 <label class="block text-gray-700 font-medium">Department:</label>
-                <input type="text" name="department" value="{{ old('department') }}"
+                <select name="department_id" required
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Select Department --</option>
+                    @foreach ($departments as $department)
+                        <option value="{{ $department->id }}"
+                            {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                            {{ $department->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             <!-- Role -->
             <div>
                 <label class="block text-gray-700 font-medium">Role:</label>
-                <input type="text" name="role" value="{{ old('role') }}"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                <select name="role" required>
+                    @foreach ($roles as $id => $role)
+                        <option value="{{ $role }}">{{ ucfirst($role) }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <!-- Account Number -->
