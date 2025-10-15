@@ -1,48 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Departments List</title>
-    <style>
-        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
-        th { background-color: #f2f2f2; }
-        a, button { margin-right: 5px; }
-    </style>
-</head>
-<body>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800">Departments</h2>
+    </x-slot>
 
-<h2>Departments</h2>
-<a href="{{ route('departments.create') }}">Add Department</a>
-<br><br>
+    <div class="py-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-4">
+            <a href="{{ route('departments.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                + Add Department
+            </a>
+        </div>
 
-@if(session('success'))
-    <div style="color:green">{{ session('success') }}</div>
-@endif
+        @if(session('success'))
+            <div class="bg-green-100 text-green-700 p-3 mb-4 rounded">
+                {{ session('success') }}
+            </div>
+        @endif
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($departments as $dept)
-            <tr>
-                <td>{{ $dept->id }}</td>
-                <td>{{ $dept->name }}</td>
-                <td>
-                    <a href="{{ route('departments.edit', $dept->id) }}">Edit</a>
-                    <form action="{{ route('departments.destroy', $dept->id) }}" method="POST" style="display:inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
-
-</body>
-</html>
+        <div class="overflow-x-auto bg-white rounded shadow-md">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">ID</th>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @forelse($departments as $dept)
+                        <tr>
+                            <td class="px-6 py-3">{{ $dept->id }}</td>
+                            <td class="px-6 py-3">{{ $dept->name }}</td>
+                            <td class="px-6 py-3 space-x-2">
+                                <a href="{{ route('departments.edit', $dept->id) }}" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition">
+                                    Edit
+                                </a>
+                                <form action="{{ route('departments.destroy', $dept->id) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                                            onclick="return confirm('Are you sure you want to delete this department?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-gray-500">No departments found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</x-app-layout>

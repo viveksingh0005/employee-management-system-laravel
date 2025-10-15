@@ -1,70 +1,108 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Inventory Batch</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        .product-row { margin-bottom: 10px; }
-        input, button { padding: 5px; margin-right: 10px; }
-    </style>
-</head>
-<body>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800">Add Inventory Batch</h2>
+    </x-slot>
 
-<h2>Add Inventory Batch</h2>
+    <div class="py-6 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        @if ($errors->any())
+            <div class="bg-red-100 text-red-700 p-3 mb-4 rounded">
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-@if ($errors->any())
-<div style="color: red;">
-    <ul>
-        @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
+        <form method="POST" action="{{ route('inventory.store') }}" class="bg-white p-6 rounded shadow-md space-y-4">
+            @csrf
 
-<form method="POST" action="{{ route('inventory.store') }}">
-    @csrf
+            <!-- Site Name -->
+            <div>
+                <label class="block mb-1 font-semibold">Site Name</label>
+                <input type="text" name="site_name" class="w-full border px-3 py-2 rounded" required>
+            </div>
 
-    <label>Site Name:</label>
-    <input type="text" name="site_name" required><br><br>
+            <!-- Date -->
+            <div>
+                <label class="block mb-1 font-semibold">Date of Receiving</label>
+                <input type="date" name="date_received" class="w-full border px-3 py-2 rounded" required>
+            </div>
 
-    <!-- Corrected input name to match DB column -->
-    <label>Date of Receiving:</label>
-    <input type="date" name="date_received" required><br><br>
+            <!-- Received By -->
+            <div>
+                <label class="block mb-1 font-semibold">Received By</label>
+                <select name="received_by" class="w-full border px-3 py-2 rounded" required>
+                    <option value="">Select Employee</option>
+                    @foreach ($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+            </div>
 
-    <h3>Products</h3>
-    <div id="product-list">
-        <div class="product-row">
-            <input type="text" name="product_name[]" placeholder="Product Name" required>
-            <input type="number" name="cost[]" placeholder="Cost" step="0.01" required>
-            <input type="number" name="quantity[]" placeholder="Quantity" required>
-            <button type="button" onclick="removeRow(this)">Remove</button>
-        </div>
+            <!-- Products -->
+            <div>
+                <h3 class="font-semibold mb-2">Products</h3>
+                <div id="product-list" class="space-y-2">
+                    <div class="flex space-x-2 items-center">
+                        <input type="text" name="product_name[]" placeholder="Product Name" class="border px-3 py-2 rounded w-1/3" required>
+                        <input type="number" name="cost[]" placeholder="Cost" step="0.01" class="border px-3 py-2 rounded w-1/6 cost" required oninput="updateTotal()">
+                        <input type="number" name="quantity[]" placeholder="Quantity" class="border px-3 py-2 rounded w-1/6 quantity" required oninput="updateTotal()">
+                        <button type="button" onclick="removeRow(this)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">Remove</button>
+                    </div>
+                </div>
+                <button type="button" onclick="addRow()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                    + Add Another Product
+                </button>
+            </div>
+
+            <!-- Total Display -->
+            <div>
+                <label class="block mb-1 font-semibold">Total Amount</label>
+                <input type="text" id="totalDisplay" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+                <input type="hidden" id="total" name="total">
+            </div>
+
+            <!-- Submit Buttons -->
+            <div>
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Save Batch</button>
+                <a href="{{ route('inventory.index') }}" class="ml-4 text-blue-600 hover:underline">Back to Inventory</a>
+            </div>
+        </form>
     </div>
 
-    <button type="button" onclick="addRow()">+ Add Another Product</button><br><br>
+    <script>
+        function addRow() {
+            const list = document.getElementById('product-list');
+            const div = document.createElement('div');
+            div.className = 'flex space-x-2 items-center';
+            div.innerHTML = `
+                <input type="text" name="product_name[]" placeholder="Product Name" class="border px-3 py-2 rounded w-1/3" required>
+                <input type="number" name="cost[]" placeholder="Cost" step="0.01" class="border px-3 py-2 rounded w-1/6 cost" required oninput="updateTotal()">
+                <input type="number" name="quantity[]" placeholder="Quantity" class="border px-3 py-2 rounded w-1/6 quantity" required oninput="updateTotal()">
+                <button type="button" onclick="removeRow(this)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">Remove</button>
+            `;
+            list.appendChild(div);
+        }
 
-    <button type="submit">Save Batch</button>
-</form>
+        function removeRow(button) {
+            button.parentElement.remove();
+            updateTotal();
+        }
 
-<script>
-function addRow() {
-    const list = document.getElementById('product-list');
-    const div = document.createElement('div');
-    div.className = 'product-row';
-    div.innerHTML = `
-        <input type="text" name="product_name[]" placeholder="Product Name" required>
-        <input type="number" name="cost[]" placeholder="Cost" step="0.01" required>
-        <input type="number" name="quantity[]" placeholder="Quantity" required>
-        <button type="button" onclick="removeRow(this)">Remove</button>
-    `;
-    list.appendChild(div);
-}
+        function updateTotal() {
+            let total = 0;
+            const costs = document.querySelectorAll('.cost');
+            const quantities = document.querySelectorAll('.quantity');
 
-function removeRow(button) {
-    button.parentElement.remove();
-}
-</script>
+            for (let i = 0; i < costs.length; i++) {
+                const cost = parseFloat(costs[i].value) || 0;
+                const qty = parseInt(quantities[i].value) || 0;
+                total += cost * qty;
+            }
 
-</body>
-</html>
+            document.getElementById('totalDisplay').value = total.toFixed(2);
+            document.getElementById('total').value = total.toFixed(2);
+        }
+    </script>
+</x-app-layout>
