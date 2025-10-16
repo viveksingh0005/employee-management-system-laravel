@@ -15,11 +15,5 @@ class InventoryItem extends Model
     {
         return $this->belongsTo(InventoryBatch::class, 'batch_id');
     }
-      public function getTotalAttribute()
-    {
-        // Sum of (cost * quantity) for each item
-        return $this->items->sum(function($item) {
-            return $item->cost * $item->quantity;
-        });
-    }
+    
 }

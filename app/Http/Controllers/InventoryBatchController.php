@@ -29,20 +29,27 @@ class InventoryBatchController extends Controller
         $request->validate([
             'site_name' => 'required|string|max:255',
             'date_received' => 'required|date',
-            'employee_id' => 'required|exists:employees,id', // received by
+            'received_by' => 'required|exists:employees,id',
             'product_name.*' => 'required|string|max:255',
             'cost.*' => 'required|numeric|min:0',
             'quantity.*' => 'required|integer|min:1',
         ]);
 
+        // Calculate total cost
+        $total = 0;
+        foreach ($request->product_name as $i => $name) {
+            $total += $request->cost[$i] * $request->quantity[$i];
+        }
+
         // Create batch
         $batch = InventoryBatch::create([
             'site_name' => $request->site_name,
             'date_received' => $request->date_received,
-            'employee_id' => $request->employee_id,
+            'received_by' => $request->received_by,
+            'total' => $total,
         ]);
 
-        // Insert products
+        // Create items
         foreach ($request->product_name as $i => $name) {
             $batch->items()->create([
                 'product_name' => $name,
@@ -51,11 +58,10 @@ class InventoryBatchController extends Controller
             ]);
         }
 
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory batch added successfully!');
+        return redirect()->route('inventory.index')->with('success', 'Inventory batch added successfully!');
     }
 
-    // Show form to edit a batch
+    // Edit batch
     public function edit($id)
     {
         $batch = InventoryBatch::with('items')->findOrFail($id);
@@ -63,13 +69,13 @@ class InventoryBatchController extends Controller
         return view('inventory.edit', compact('batch', 'employees'));
     }
 
-    // Update a batch
+    // Update batch
     public function update(Request $request, $id)
     {
         $request->validate([
             'site_name' => 'required|string|max:255',
             'date_received' => 'required|date',
-            'employee_id' => 'required|exists:employees,id',
+            'received_by' => 'required|exists:employees,id',
             'product_name.*' => 'required|string|max:255',
             'cost.*' => 'required|numeric|min:0',
             'quantity.*' => 'required|integer|min:1',
@@ -77,13 +83,21 @@ class InventoryBatchController extends Controller
 
         $batch = InventoryBatch::findOrFail($id);
 
+        // Calculate total again
+        $total = 0;
+        foreach ($request->product_name as $i => $name) {
+            $total += $request->cost[$i] * $request->quantity[$i];
+        }
+
+        // Update batch
         $batch->update([
             'site_name' => $request->site_name,
             'date_received' => $request->date_received,
-            'employee_id' => $request->employee_id,
+            'received_by' => $request->received_by,
+            'total' => $total,
         ]);
 
-        // Remove old items and insert new ones
+        // Remove old items and add new ones
         $batch->items()->delete();
 
         foreach ($request->product_name as $i => $name) {
@@ -94,18 +108,16 @@ class InventoryBatchController extends Controller
             ]);
         }
 
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory batch updated successfully!');
+        return redirect()->route('inventory.index')->with('success', 'Inventory batch updated successfully!');
     }
 
-    // Delete a batch
+    // Delete batch
     public function destroy($id)
     {
         $batch = InventoryBatch::findOrFail($id);
         $batch->items()->delete();
         $batch->delete();
 
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory batch deleted successfully!');
+        return redirect()->route('inventory.index')->with('success', 'Inventory batch deleted successfully!');
     }
 }

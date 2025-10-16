@@ -19,4 +19,11 @@ class InventoryBatch extends Model
 {
     return $this->belongsTo(Employee::class, 'received_by');
 }
+  public function getTotalAttribute()
+    {
+        // Sum of (cost * quantity) for each item
+        return $this->items->sum(function($item) {
+            return $item->cost * $item->quantity;
+        });
+    }
 }

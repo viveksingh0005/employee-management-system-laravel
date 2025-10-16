@@ -65,7 +65,7 @@
             <!-- Total -->
             <div>
                 <label class="block mb-1 font-semibold">Total Amount</label>
-                <input type="text" id="totalDisplay" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+                <input type="text" id="totalDisplay" value="{{ number_format($batch->total, 2) }}" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
                 <input type="hidden" id="total" name="total" value="{{ $batch->total }}">
             </div>
 
@@ -111,7 +111,7 @@
             document.getElementById('total').value = total.toFixed(2);
         }
 
-        // Initialize total on page load
+        // Initialize total when page loads
         document.addEventListener("DOMContentLoaded", updateTotal);
     </script>
 </x-app-layout>
