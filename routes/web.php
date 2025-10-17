@@ -57,11 +57,11 @@ Route::middleware('auth')->group(function () {
    Route::get('/salaries', [SalaryController::class, 'index'])->name('salaries.index');
    Route::get('/salaries/create', [SalaryController::class, 'create'])->name('salaries.create');
    Route::post('/salaries', [SalaryController::class, 'store'])->name('salaries.store');
-   Route::get('/salaries/{salary}', [SalaryController::class, 'show'])->name('salaries.show');
    Route::get('/salaries/{salary}/edit', [SalaryController::class, 'edit'])->name('salaries.edit');
    Route::put('/salaries/{salary}', [SalaryController::class, 'update'])->name('salaries.update');
    Route::delete('/salaries/{salary}', [SalaryController::class, 'destroy'])->name('salaries.destroy');
-   Route::get('my-salaries', [SalaryController::class, 'mySalaries'])->name('salaries.my');
+   Route::get('/salaries/my', [SalaryController::class, 'mySalaries'])->name('salaries.my');
+
 
 
 Route::prefix('attendances')->group(function () {

@@ -24,7 +24,7 @@ class SalaryController extends Controller
     }
 
     $salaries = Salary::where('employee_id', $user->employee->id)->get();
-    return view('salaries.my_salaries', compact('salaries'));
+    return view('salaries.show', compact('salaries'));
 }
 
     // Show create salary form (admin only)

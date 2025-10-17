@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex  items-center">
             <h2 class="font-semibold text-2xl text-gray-800">
                 Employees
             </h2>
@@ -12,6 +12,25 @@
     </x-slot>
 
     <div class="mt-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form action="{{ route('employees.index') }}" method="GET" class="mb-4 flex items-center gap-2">
+    <input
+        type="text"
+        name="search"
+        value="{{ request('search') }}"
+        placeholder="Search by name, email, or department"
+        class="border border-gray-300 rounded-md p-2 w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    >
+    <button
+        type="submit"
+        class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-all"
+    >
+        Search
+    </button>
+    @if(request('search'))
+        <a href="{{ route('employees.index') }}" class="text-gray-500 underline">Clear</a>
+    @endif
+</form>
+
         <div class="overflow-x-auto bg-white shadow-md rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

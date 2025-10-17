@@ -21,11 +21,27 @@ class EmployeeController extends Controller
 }
 
     // ✅ List employees
-    public function index()
-    {
-        $employees = Employee::with('documents', 'department', 'user')->get();
-        return view('employees.index', compact('employees'));
+    public function index(Request $request)
+{
+    $search = $request->input('search');
+
+    $query = Employee::with(['documents', 'department', 'user']);
+
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%")
+              ->orWhereHas('department', function ($q2) use ($search) {
+                  $q2->where('name', 'like', "%{$search}%");
+              });
+        });
     }
+
+    $employees = $query->orderBy('id', 'desc')->get();
+
+    return view('employees.index', compact('employees', 'search'));
+}
+
 
     // ✅ Show create form
     public function create()
