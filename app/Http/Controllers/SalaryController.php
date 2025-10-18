@@ -16,16 +16,20 @@ class SalaryController extends Controller
     }
 
     // Employee: Show only their salaries
-    public function mySalaries()
+  public function show($employeeId)
 {
-    $user = Auth::user(); // instead of auth()->user(), both work
-    if (!$user->employee) {
-        abort(403, 'No employee record linked.');
-    }
+    // Fetch employee details
+    $employee = \App\Models\Employee::findOrFail($employeeId);
 
-    $salaries = Salary::where('employee_id', $user->employee->id)->get();
-    return view('salaries.show', compact('salaries'));
+    // Fetch all salary records for this employee, ordered by month
+    $salaries = \App\Models\Salary::where('employee_id', $employeeId)
+        ->orderBy('month', 'desc')
+        ->get();
+
+    // Pass data to the view
+    return view('salaries.show', compact('employee', 'salaries'));
 }
+
 
     // Show create salary form (admin only)
     public function create()

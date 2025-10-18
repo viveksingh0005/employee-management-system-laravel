@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -9,23 +10,18 @@ use Carbon\CarbonPeriod;
 
 class AttendanceController extends Controller
 {
+    // Display attendance table
     public function index(Request $request)
     {
-        // choose month/year (allow ?month=10&year=2025)
         $year  = $request->get('year', now()->year);
         $month = $request->get('month', now()->month);
 
-        // build start/end and a CarbonPeriod of all dates in month
         $start = Carbon::create($year, $month, 1)->startOfMonth();
         $end   = $start->copy()->endOfMonth();
-        $period = CarbonPeriod::create($start, $end);
-        $dates = collect($period); // collection of Carbon dates
+        $dates = collect(CarbonPeriod::create($start, $end));
 
-        // employees to show as rows
         $employees = Employee::orderBy('name')->get();
 
-        // load attendances for that month and build an associative array:
-        // $attendances[employee_id][yyyy-mm-dd] = ['morning' => true/false, 'evening' => true/false, 'id'=>attendance_id]
         $raw = Attendance::whereYear('date', $year)
                          ->whereMonth('date', $month)
                          ->get();
@@ -33,105 +29,134 @@ class AttendanceController extends Controller
         $attendances = [];
         foreach ($raw as $a) {
             $d = Carbon::parse($a->date)->toDateString();
+            $morning = $a->morning_shift ? 'full' : 'absent';
+            $evening = $a->evening_shift ? 'full' : 'absent';
+
+            // If morning but not evening -> half
+            if($a->morning_shift && !$a->evening_shift) $morning = 'half';
+            if(!$a->morning_shift && $a->evening_shift) $evening = 'half';
+
             $attendances[$a->employee_id][$d] = [
-                'morning' => (bool) $a->morning_shift,
-                'evening' => (bool) $a->evening_shift,
+                'morning' => $morning,
+                'evening' => $evening,
                 'id' => $a->id,
             ];
         }
 
-        // pass everything to the view
-        return view('attendances.index', compact('employees', 'dates', 'attendances', 'month', 'year'));
+        // Monthly summary
+        $summary = [];
+        foreach ($employees as $employee) {
+            $records = $raw->where('employee_id', $employee->id);
+            $full = $records->filter(fn($a) => $a->morning_shift && $a->evening_shift)->count();
+            $half = $records->filter(fn($a) => $a->morning_shift xor $a->evening_shift)->count();
+            $daysInMonth = $start->daysInMonth;
+            $leave = $daysInMonth - ($full + $half * 0.5);
+
+            $summary[$employee->id] = [
+                'full' => $full,
+                'half' => $half,
+                'leave' => round($leave, 1),
+            ];
+        }
+
+        return view('attendances.index', compact(
+            'employees',
+            'dates',
+            'attendances',
+            'month',
+            'year',
+            'summary'
+        ));
     }
 
-
-    public function create()
+    // Store attendance data
+    public function store(Request $request)
     {
-        $employees = Employee::all();
-        return view('attendances.create', compact('employees'));
-    }
+        $data = $request->input('attendance', []);
 
-   public function store(Request $request)
-{
-    $data = $request->input('attendance', []); // array: employee_id => date => morning/evening
+        foreach ($data as $employeeId => $days) {
+            foreach ($days as $date => $shifts) {
+                $morningStatus = $shifts['morning'] ?? 'absent';
+                $eveningStatus = $shifts['evening'] ?? 'absent';
 
-    foreach ($data as $employee_id => $dates) {
-        foreach ($dates as $date => $shifts) {
-            Attendance::updateOrCreate(
-                [
-                    'employee_id' => $employee_id,
-                    'date' => $date,
-                ],
-                [
-                    'morning_shift' => isset($shifts['morning']),
-                    'evening_shift' => isset($shifts['evening']),
-                ]
-            );
+                Attendance::updateOrCreate(
+                    ['employee_id' => $employeeId, 'date' => $date],
+                    [
+                        'morning_shift' => in_array($morningStatus, ['half','full']),
+                        'evening_shift' => in_array($eveningStatus, ['half','full']),
+                    ]
+                );
+            }
         }
+
+        return redirect()->route('attendances.index', $request->only(['month','year']))
+                         ->with('success', 'Attendance saved successfully!');
     }
 
-    return redirect()->route('attendances.index')
-                     ->with('success', 'Attendance recorded successfully!');
-}
+    // Edit attendance (optional if you want separate edit page)
+    public function edit($year, $month)
+    {
+        $start = Carbon::create($year, $month, 1)->startOfMonth();
+        $end   = $start->copy()->endOfMonth();
+        $dates = collect(CarbonPeriod::create($start, $end));
 
+        $employees = Employee::orderBy('name')->get();
 
-public function edit($year, $month)
-{
-    $start = Carbon::create($year, $month, 1)->startOfMonth();
-    $end   = $start->copy()->endOfMonth();
-    $period = CarbonPeriod::create($start, $end);
-    $dates = collect($period);
+        $raw = Attendance::whereYear('date', $year)
+                         ->whereMonth('date', $month)
+                         ->get();
 
-    $employees = Employee::orderBy('name')->get();
+        $attendances = [];
+        foreach ($raw as $a) {
+            $d = Carbon::parse($a->date)->toDateString();
+            $morning = $a->morning_shift ? 'full' : 'absent';
+            $evening = $a->evening_shift ? 'full' : 'absent';
 
-    $raw = Attendance::whereYear('date', $year)
-                     ->whereMonth('date', $month)
-                     ->get();
+            if($a->morning_shift && !$a->evening_shift) $morning = 'half';
+            if(!$a->morning_shift && $a->evening_shift) $evening = 'half';
 
-    $attendances = [];
-    foreach ($raw as $a) {
-        $d = Carbon::parse($a->date)->toDateString();
-        $attendances[$a->employee_id][$d] = [
-            'morning' => (bool) $a->morning_shift,
-            'evening' => (bool) $a->evening_shift,
-            'id' => $a->id,
-        ];
-    }
-
-    return view('attendances.edit', compact('employees', 'dates', 'attendances', 'month', 'year'));
-}
-
-
-public function update(Request $request, $year, $month)
-{
-    $data = $request->input('attendance', []);
-
-    foreach ($data as $employeeId => $days) {
-        foreach ($days as $date => $shifts) {
-            $attendance = Attendance::updateOrCreate(
-                ['employee_id' => $employeeId, 'date' => $date],
-                [
-                    'morning_shift' => !empty($shifts['morning']),
-                    'evening_shift' => !empty($shifts['evening']),
-                ]
-            );
+            $attendances[$a->employee_id][$d] = [
+                'morning' => $morning,
+                'evening' => $evening,
+                'id' => $a->id,
+            ];
         }
+
+        return view('attendances.edit', compact('employees','dates','attendances','month','year'));
     }
 
-    return redirect()->route('attendances.index', ['month' => $month, 'year' => $year])
-                     ->with('success', 'Attendance updated successfully!');
-}
+    // Update attendance data
+    public function update(Request $request, $year, $month)
+    {
+        $data = $request->input('attendance', []);
 
+        foreach ($data as $employeeId => $days) {
+            foreach ($days as $date => $shifts) {
+                $morningStatus = $shifts['morning'] ?? 'absent';
+                $eveningStatus = $shifts['evening'] ?? 'absent';
 
+                Attendance::updateOrCreate(
+                    ['employee_id' => $employeeId, 'date' => $date],
+                    [
+                        'morning_shift' => in_array($morningStatus, ['half','full']),
+                        'evening_shift' => in_array($eveningStatus, ['half','full']),
+                    ]
+                );
+            }
+        }
 
+        return redirect()->route('attendances.index', ['month'=>$month,'year'=>$year])
+                         ->with('success', 'Attendance updated successfully!');
+    }
 
+    // Delete attendance
     public function destroy(Attendance $attendance)
     {
         $attendance->delete();
         return redirect()->route('attendances.index')->with('success', 'Attendance deleted.');
     }
 
-    // Monthly view
+    // Optional month view
     public function monthView($year, $month)
     {
         $employees = Employee::all();
@@ -139,9 +164,6 @@ public function update(Request $request, $year, $month)
                                   ->whereMonth('date', $month)
                                   ->get();
 
-        return view('attendances.month', compact('employees', 'attendances', 'month', 'year'));
+        return view('attendances.month', compact('employees','attendances','month','year'));
     }
-
-
 }
-

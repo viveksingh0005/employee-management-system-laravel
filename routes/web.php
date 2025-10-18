@@ -60,7 +60,8 @@ Route::middleware('auth')->group(function () {
    Route::get('/salaries/{salary}/edit', [SalaryController::class, 'edit'])->name('salaries.edit');
    Route::put('/salaries/{salary}', [SalaryController::class, 'update'])->name('salaries.update');
    Route::delete('/salaries/{salary}', [SalaryController::class, 'destroy'])->name('salaries.destroy');
-   Route::get('/salaries/my', [SalaryController::class, 'mySalaries'])->name('salaries.my');
+   Route::get('/salaries/employee/{employee}', [SalaryController::class, 'show'])->name('salaries.show');
+
 
 
 

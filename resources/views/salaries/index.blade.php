@@ -34,7 +34,8 @@
                             <td class="px-4 py-2 border">{{ $salary->payment_date ?? 'Pending' }}</td>
                             <td class="px-4 py-2 border capitalize">{{ $salary->status }}</td>
                             <td class="px-4 py-2 border space-x-2">
-                                  <a href="{{ route('salaries.my') }}" class="text-blue-600 hover:text-blue-800 mr-2">View</a>
+                                 <a href="{{ route('salaries.show', $salary->employee_id) }}" 
+   class="text-blue-600 hover:text-blue-800 mr-2">View</a>
 
                                 <a href="{{ route('salaries.edit', $salary->id) }}" class="text-blue-600">Edit</a>
                                 <form action="{{ route('salaries.destroy', $salary->id) }}" method="POST" class="inline">
