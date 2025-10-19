@@ -17,4 +17,7 @@ class Attendance extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+      protected $casts = [
+        'date' => 'date', // Laravel will cast to Carbon automatically
+    ];
 }

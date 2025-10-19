@@ -65,14 +65,16 @@ Route::middleware('auth')->group(function () {
 
 
 
-Route::prefix('attendances')->group(function () {
-    Route::get('/', [AttendanceController::class, 'index'])->name('attendances.index');
-    Route::post('/', [AttendanceController::class, 'store'])->name('attendances.store');
 
-    // Month-wise edit/update
-    Route::get('/{year}/{month}/edit', [AttendanceController::class, 'edit'])->name('attendances.edit');
-    Route::put('/{year}/{month}', [AttendanceController::class, 'update'])->name('attendances.update');
-});
+
+
+
+
+
+Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
+Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
+
+
 
     Route::get('/sites', [SiteController::class, 'index'])->name('sites.index');
     Route::get('/sites/create', [SiteController::class, 'create'])->name('sites.create');

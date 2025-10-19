@@ -9,18 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-     public function up(): void
+    public function up(): void
     {
         Schema::create('attendances', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->date('date');
-            $table->boolean('morning_shift')->default(false);
-            $table->boolean('evening_shift')->default(false);
-            $table->timestamps();
+    $table->id();
+    $table->foreignId('employee_id')->constrained()->onDelete('cascade');
+    $table->date('date');
+    $table->enum('morning_shift', ['none', 'half', 'full'])->default('none');
+    $table->enum('evening_shift', ['none', 'half', 'full'])->default('none');
+    $table->timestamps();
 
-            $table->unique(['employee_id', 'date']); // prevent duplicate entry
-        });
+    $table->unique(['employee_id', 'date']); // prevent duplicate entry
+});
     }
 
     /**
