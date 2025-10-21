@@ -9,11 +9,25 @@ use Illuminate\Http\Request;
 class SalaryController extends Controller
 {
     // Admin: Show all salaries
-    public function index()
-    {
-        $salaries = Salary::with('employee')->get();
-        return view('salaries.index', compact('salaries'));
+public function index(Request $request)
+{
+    $search = $request->input('search');
+
+    $query = Salary::with('employee');
+
+    if ($search) {
+        $query->whereHas('employee', function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%");
+        });
     }
+
+    $salaries = $query->orderBy('id', 'desc')->paginate(10);
+
+    return view('salaries.index', compact('salaries'));
+}
+
+
+
 
     // Employee: Show only their salaries
   public function show($employeeId)
@@ -93,4 +107,6 @@ class SalaryController extends Controller
         $salary->delete();
         return back()->with('success','Salary deleted successfully.');
     }
+
+    
 }

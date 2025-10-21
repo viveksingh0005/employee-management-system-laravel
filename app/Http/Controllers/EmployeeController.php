@@ -208,4 +208,14 @@ class EmployeeController extends Controller
 
         return back()->with('success', 'Document deleted successfully.');
     }
+    public function search(Request $request)
+    {
+        $query = $request->query('q');
+        $employees = Employee::where('name', 'LIKE', "%{$query}%")
+                            ->select('id', 'name')
+                            ->take(10)
+                            ->get();
+
+        return response()->json($employees);
+    }
 }
