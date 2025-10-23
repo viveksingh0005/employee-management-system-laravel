@@ -10,11 +10,25 @@ use Illuminate\Http\Request;
 class InventoryBatchController extends Controller
 {
     // Display all batches
-    public function index()
-    {
-        $batches = InventoryBatch::with('items', 'employee')->latest()->get();
-        return view('inventory.index', compact('batches'));
+   public function index(Request $request)
+{
+    $query = InventoryBatch::with('items', 'employee');
+
+    // Filter by Site Name
+    if ($request->filled('site_name')) {
+        $query->where('site_name', 'like', '%' . $request->site_name . '%');
     }
+
+    // Filter by Date (exact or partial)
+    if ($request->filled('date_received')) {
+        $query->whereDate('date_received', $request->date_received);
+    }
+
+    $batches = $query->latest()->get();
+
+    return view('inventory.index', compact('batches'));
+}
+
 
     // Show form to create a new batch
     public function create()
@@ -120,4 +134,10 @@ class InventoryBatchController extends Controller
 
         return redirect()->route('inventory.index')->with('success', 'Inventory batch deleted successfully!');
     }
+    public function show($id)
+{
+    $batch = InventoryBatch::with('items', 'employee')->findOrFail($id);
+    return view('inventory.show', compact('batch'));
+}
+
 }

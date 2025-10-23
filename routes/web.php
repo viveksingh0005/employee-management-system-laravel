@@ -92,6 +92,8 @@ Route::post('/attendances', [AttendanceController::class, 'store'])->name('atten
     Route::get('/{id}/edit', [InventoryBatchController::class, 'edit'])->name('inventory.edit');
     Route::put('/{id}', [InventoryBatchController::class, 'update'])->name('inventory.update');
     Route::delete('/{id}', [InventoryBatchController::class, 'destroy'])->name('inventory.destroy');
+    Route::get('/{id}', [InventoryBatchController::class, 'show'])->name('inventory.show');
+
 });
 
 
